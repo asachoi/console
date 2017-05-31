@@ -1,0 +1,401 @@
+{
+  "result": {
+    "0": {
+      "var": {
+        "variable": "eventAvyInitialization",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // reset data for AVY beginning\n      return \"Initialize AVY\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args['context'];\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var metadata = context.events.metadata;\n      var productId = basePlan.product.productKey.primaryProduct.productPK.productId;\n      //this.self.context['cashOutAccount'] = FundImpl.create();\n      var runningPolicyValues = context.runningPolicyValues;\n      //console.log(\"runningPolicyValues = \" + (runningPolicyValues.fundPool));\n      var year = runningPolicyValues.year;\n      var months = runningPolicyValues.months;\n      var month = months % 12;\n      var fundConfig;\n      fundConfig = {\n         fundId: \"\"\n      };\n      fundConfig['annualInterestRate'] = {};\n      fundConfig[PublicConstants.FUND_RETURN.LOW] = Number(0);\n      fundConfig[PublicConstants.FUND_RETURN.MEDIUM] = Number(0);\n      fundConfig[PublicConstants.FUND_RETURN.HIGH] = Number(0);\n      fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.LOW] = Number(0);\n      fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.MEDIUM] = Number(0);\n      fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.HIGH] = Number(0);\n      fundConfig['policyOptions'] = context.policyOptions;\n\n      if (months == 0) {\n         runningPolicyValues['totalPremiums'] = 0;\n         runningPolicyValues['initialFaceAmountRatio'] = Number(basePlan.faceAmount / proposal.coverageInfo.initialDumpIn).toFixed(2);\n         console.log(\"initialFaceAmountRatio = \" + runningPolicyValues.initialFaceAmountRatio);\n\n         var fundSelections = Utils.iterator(proposal.funds.fundRecord);\n         //console.log(\"fundSelections : \" + JSON.stringify(fundSelections));\n         for (fundId in fundSelections) {\n            var fundRecord = fundSelections[fundId];\n            //var fundRecord = proposal.funds.fundRecord[PublicConstants.FUND_CODE.TARGET_INCOME];\n            if (fundRecord._code == PublicConstants.FUND_CODE.TARGET_INCOME && Number(fundRecord.allocation) > 0) {\n               //console.log(\"fundRecord.returnRate[\" + fundRecord._code + \"] = \" + JSON.stringify(fundRecord));\n               fundConfig = {\n                  fundId: fundRecord._code\n               };\n               if (fundRecord.returnRate > 0) {\n                  fundConfig[PublicConstants.FUND_RETURN.LOW] = Number(Math.pow(1 + fundRecord.returnRate / 100, 1 / metadata.iterationUnit) - 1).toFixed(15);\n               }\n               if (fundRecord.returnRateMedium > 0) {\n                  fundConfig[PublicConstants.FUND_RETURN.MEDIUM] = Number(Math.pow(1 + fundRecord.returnRateMedium / 100, 1 / metadata.iterationUnit) - 1).toFixed(15);\n               }\n               if (fundRecord.returnRateHigh > 0) {\n                  fundConfig[PublicConstants.FUND_RETURN.HIGH] = Number(Math.pow(1 + fundRecord.returnRateHigh / 100, 1 / metadata.iterationUnit) - 1).toFixed(15);\n               }\n               fundConfig['payoutRatio'] = fundRecord.targetPayoutRate;\n               fundConfig['annualInterestRate'] = {};\n               fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.LOW] = fundRecord.returnRate;\n               fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.MEDIUM] = fundRecord.returnRateMedium;\n               fundConfig.annualInterestRate[PublicConstants.FUND_RETURN.HIGH] = fundRecord.returnRateHigh;\n               fundConfig['isSurrenderChargeApplicable'] = false;\n            }\n         }\n         runningPolicyValues['cashoutAccount'] = FundImpl.create({\n            fundConfig: fundConfig,\n            context: context\n         });\n      }\n\n      if (month == 0) {\n         runningPolicyValues['initialDumpIn'] = 0;\n         runningPolicyValues['newPremium'] = 0;\n         runningPolicyValues['withdrawal'] = 0;\n         runningPolicyValues['firstMonthCoi'] = Number(0);\n         runningPolicyValues['cashOutPayments'] = {};\n         runningPolicyValues['cois'] = {};\n         runningPolicyValues['annualCois'] = {};\n         runningPolicyValues['accumulatedcashOutPayments'] = {};\n\n         for (returnTypeKey in PublicConstants.FUND_RETURN) {\n            runningPolicyValues['cashOutPayments'][returnTypeKey] = Number(0);\n            runningPolicyValues['cois'][returnTypeKey] = Number(0);\n            runningPolicyValues['annualCois'][returnTypeKey] = Number(0);\n            runningPolicyValues['accumulatedcashOutPayments'][returnTypeKey] = Number(0);\n         }\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "1": {
+      "var": {
+        "variable": "eventReceiveInitialPremiums",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventReceiveInitialPremiums\n      // - receive premium and dump in the amount to accounts\n      return \"Receive Initial Premiums\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var productId = basePlan.product.productKey.primaryProduct.productPK.productId;\n      var runningPolicyValues = context.runningPolicyValues;\n      var newPremium = 0;\n\n      var year = runningPolicyValues.year;\n      var months = runningPolicyValues.months;\n      //var month = months % 12;\n\n      if (months == 0) {\n         newPremium = Number(newPremium) + Number(proposal.coverageInfo.initialDumpIn);\n         // if (!Utils.isNothing(proposal.fundActivities) && !Utils.isNothing(proposal.fundActivities.fundActivity)) {\n         //    var activities = Utils.iterator( proposal.fundActivities.fundActivity );\n         //    //var activities = proposal.fundActivities.fundActivity;\n         //    var parties = Utils.iterator(basePlan.parties.party);\n         //    for (idx in activities) {\n         //       var activity = activities[idx];\n         //       if (Number(activity.topupPremium) > 0 && Number(activity.attainAge) == (Number(parties[0].insuredAge) + Number(year))) {\n         //          newPremium = Number( newPremium ) + Number( activity.topupPremium );\n         //          break;\n         //       }\n         //    }\n         // }\n         console.log(\"initialDumpIn = \" + newPremium);\n      }\n      if (Number(newPremium) > 0) {\n         var allocationRates = context.rates[productId][SchemaConstants.PREMIUM_TYPE.ALLOCATION];\n\n         //console.log(\"allocationRates = \" + JSON.stringify(allocationRates));\n\n         var newPremiumRounding = proposal.coverageInfo.catalog.call(\"rounding\", {\n            coverage: basePlan\n         });\n         var netNewPremium = Number(newPremium * (1 - allocationRates.rates[year]).toFixed(4)).toFixed(newPremiumRounding);\n\n         console.log(\"netNewPremium = \" + netNewPremium);\n\n         if (Number(netNewPremium) > 0) {\n            runningPolicyValues.initialDumpIn = Number(runningPolicyValues.initialDumpIn) + Number(newPremium);\n            runningPolicyValues.totalPremiums = Number(runningPolicyValues.totalPremiums) + Number(newPremium);\n            IFund.appliedTo(runningPolicyValues.fundPool).call(\"dumpin\", {\n               amount: netNewPremium\n            });\n         }\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "2": {
+      "var": {
+        "variable": "eventCalculateNAR",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventCalculateNAR\n      // - calculate the Net Amount at Risk\n      return \"Calculate NAR\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var runningPolicyValues = context.runningPolicyValues;\n\n      var narCalc = DataDrivenCalculatorImpl.create({\n         drivenKeys: PublicConstants.FUND_RETURN,\n         drivenDatas: [IFund.appliedTo(runningPolicyValues.fundPool).call(\"fundBalances\", {}), IFund.appliedTo(runningPolicyValues.cashoutAccount).call(\"fundBalances\", {})]\n      });\n      var nars = IDataDrivenCalculator.appliedTo(narCalc).call(\"calculate\", {\n         calculateBlock: function(fund) {\n            if (basePlan.options.dbLevel == SchemaConstants.DB_OPTION.INCREASE) {\n               if (basePlan.catalog.call(\"isSinglePremium\", {})) {\n                  return Number(runningPolicyValues.totalPremiums * runningPolicyValues.initialFaceAmountRatio).toFixed(15);\n               } else {\n                  return Number(basePlan.faceAmount);\n               }\n            }\n            if (basePlan.options.dbLevel == SchemaConstants.DB_OPTION.LEVEL) {\n               var fundBalance = fund[0];\n               var cashOutAccountBalance = fund[1];\n               var totalFundBalance = Number(fundBalance) + Number(cashOutAccountBalance);\n               if (basePlan.catalog.call(\"isSinglePremium\", {})) {\n                  var fa = Number(runningPolicyValues.totalPremiums * runningPolicyValues.initialFaceAmountRatio).toFixed(15);\n                  var nar = Math.max(Number(0), Number(Number(fa) - Number(totalFundBalance)).toFixed(15));\n                  //console.log(\"months :\" + runningPolicyValues.months + \", fundBalance :\" + fundBalance + \" ,cahoutAccountBalance :\" + cahoutAccountBalance + \" ,fa :\" + fa + \", nar :\" + nar);\n                  return nar;\n               } else {\n                  return Number(Number(basePlan.faceAmount) - Number(totalFundBalance)).toFixed(15);\n               }\n            }\n         }\n      });\n      runningPolicyValues['nars'] = nars;\n\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "3": {
+      "var": {
+        "variable": "eventCalculateCOI",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventCalculateCOI\n      // - calculate COI based on the NAR result\n      return \"Calculate COI\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var productId = basePlan.product.productKey.primaryProduct.productPK.productId;\n      var runningPolicyValues = context.runningPolicyValues;\n      var year = runningPolicyValues.year;\n      var month = runningPolicyValues.months;\n      var coiVal = Number(0);\n\n      var coiRates = context.rates[basePlan.product.productKey.primaryProduct.productPK.productId][SchemaConstants.PREMIUM_TYPE.COSTOFINSURANCE];\n      var coiRate;\n      if (year > coiRates.rates.length - 1) {\n         coiRate = coiRates.rates[coiRates.rates.length - 1];\n      } else {\n         coiRate = coiRates.rates[year];\n      }\n      var narCalc = DataDrivenCalculatorImpl.create({\n         drivenKeys: PublicConstants.FUND_RETURN,\n         drivenDatas: runningPolicyValues.nars\n      });\n      var cois = IDataDrivenCalculator.appliedTo(narCalc).call(\"calculate\", {\n         calculateBlock: function(nar) {\n            var coi = Number(nar * coiRate / 12000).toFixed(15);\n            //console.log(\"nar = \" + nar);\n            //console.log(\"coiRate = \" + coiRate);\n            //console.log(\"coi = \" + coi);\n            coiVal = coi;\n            return coi;\n         }\n      });\n      var accumCalc = DataDrivenCalculatorImpl.create({\n         drivenKeys: PublicConstants.FUND_RETURN,\n         drivenDatas: [cois, runningPolicyValues.annualCois]\n      });\n\n      var annualCois = IDataDrivenCalculator.appliedTo(accumCalc).call(\"calculate\", {\n         calculateBlock: function(args) {\n            var coi = args[0];\n            var annualCoi = args[1];\n            return Number(Number(annualCoi) + Number(coi)).toFixed(15);\n         }\n      });\n      runningPolicyValues['cois'] = cois;\n      runningPolicyValues['annualCois'] = annualCois;\n      runningPolicyValues['coiRate'] = coiRate;\n      if (month == \"0\") {\n         runningPolicyValues['firstMonthCoi'] = coiVal;\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "4": {
+      "var": {
+        "variable": "eventDeductCOI",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventDeductCOI\n      // - deduct COI from accounts\n      return \"Deduct COI\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var runningPolicyValues = context.runningPolicyValues;\n      IFund.appliedTo(runningPolicyValues.fundPool).call(\"withdraw\", {\n         amounts: runningPolicyValues.cois\n      });\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "5": {
+      "var": {
+        "variable": "eventRollInterest",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventRollInterest\n      // - roll interest of accounts\n      return \"Roll interest\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var runningPolicyValues = context.runningPolicyValues;\n      //console.log(\"runningPolicyValues.fundPool : \");\n      IFund.appliedTo(runningPolicyValues.fundPool).call(\"rollingInterest\", {});\n\n      if (runningPolicyValues.cashoutAccount) {\n         //console.log(\"runningPolicyValues.cashoutAccount : \");\n         IFund.appliedTo(runningPolicyValues.cashoutAccount).call(\"rollingInterest\", {});\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // it will be executed regardless the calculate options\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "6": {
+      "var": {
+        "variable": "eventReceiveTopupPremium",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventReceiveTopupPremium\n      // - deduct withdrawal and redemption fee from accounts\n      return \"Receive Topup Premium\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n\n      var runningPolicyValues = context.runningPolicyValues;\n      var year = context.runningPolicyValues.year;\n      var month = context.runningPolicyValues.months % 12;\n\n      var topupPremium = 0;\n      if (!Utils.isNothing(proposal.fundActivities) && !Utils.isNothing(proposal.fundActivities.fundActivity)) {\n         var activities = Utils.iterator(proposal.fundActivities.fundActivity);\n         var parties = Utils.iterator(basePlan.parties.party);\n         for (idx in activities) {\n            var activity = activities[idx];\n            if (Number(activity.topupPremium) > Number(0) && Number(activity.attainAge) == (Number(parties[0].insuredAge) + Number(year)) && (month == 0)) {\n               topupPremium = activity.topupPremium;\n               break;\n            }\n         }\n      }\n      if (Number(topupPremium) > Number(0)) {\n         var productId = basePlan.product.productKey.primaryProduct.productPK.productId;\n         var allocationRates = context.rates[productId][SchemaConstants.PREMIUM_TYPE.TOPUP_ALLOCATION];\n\n         var newPremiumRounding = proposal.coverageInfo.catalog.call(\"rounding\", {\n            coverage: basePlan\n         });\n         var netTopupPremium = Number(topupPremium * (1 - allocationRates.rates[year]).toFixed(4)).toFixed(newPremiumRounding);\n\n         runningPolicyValues.newPremium = Number(runningPolicyValues.newPremium) + Number(topupPremium);\n         runningPolicyValues.totalPremiums = Number(runningPolicyValues.totalPremiums) + Number(topupPremium);\n         IFund.appliedTo(runningPolicyValues.fundPool).call(\"dumpin\", {\n            amount: netTopupPremium\n         });\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var policyOptions = context.policyOptions;\n      return Utils.matchInList(InterfaceConstants.POLICY_OPTIONS.FUND_ACTIVITIES_OPTION, policyOptions, false);\n   }"
+            }
+          }
+        }
+      }
+    },
+    "7": {
+      "var": {
+        "variable": "eventDeductWithdrawal",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventPerformWithdrawal\n      // - deduct withdrawal and redemption fee from accounts\n      return \"Deduct withdrawal from accounts\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n\n      var runningPolicyValues = context.runningPolicyValues;\n      var year = context.runningPolicyValues.year;\n      var month = context.runningPolicyValues.months % 12;\n\n      var withdrawalAmount = 0;\n      if (!Utils.isNothing(proposal.fundActivities) && !Utils.isNothing(proposal.fundActivities.fundActivity)) {\n         var activities = Utils.iterator(proposal.fundActivities.fundActivity);\n         var parties = Utils.iterator(basePlan.parties.party);\n         for (idx in activities) {\n            var activity = activities[idx];\n            if (Number(activity.withdrawal) > Number(0) && Number(activity.attainAge) == (Number(parties[0].insuredAge) + Number(year)) && (month == 0)) {\n               withdrawalAmount = activity.withdrawal;\n               break;\n            }\n         }\n      }\n      if (Number(withdrawalAmount) > Number(0)) {\n         runningPolicyValues.withdrawal = withdrawalAmount;\n         IFund.appliedTo(runningPolicyValues.fundPool).call(\"withdraw\", {\n            amount: withdrawalAmount\n         });\n      }\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var policyOptions = context.policyOptions;\n      return Utils.matchInList(InterfaceConstants.POLICY_OPTIONS.FUND_ACTIVITIES_OPTION, policyOptions, false);\n   }"
+            }
+          }
+        }
+      }
+    },
+    "8": {
+      "var": {
+        "variable": "eventCalculateDeathBenefit",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventCalculateDeathBenefit\n      // - calculate redemption charges base on the withdrawal amount and policy year\n      return \"Calculate death benefit\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var runningPolicyValues = context.runningPolicyValues;\n\n      var narCalc = DataDrivenCalculatorImpl.create({\n         drivenKeys: PublicConstants.FUND_RETURN,\n         drivenDatas: PublicConstants.FUND_RETURN\n      });\n      var deathBenefits = IDataDrivenCalculator.appliedTo(narCalc).call(\"calculate\", {\n         calculateBlock: function(fund) {\n            // death benefit = basePlan.faceAmount\n            // the logic can be further extended\n            return Number(runningPolicyValues.totalPremiums * runningPolicyValues.initialFaceAmountRatio).toFixed(0);\n         }\n      });\n      runningPolicyValues['deathBenefits'] = deathBenefits;\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "9": {
+      "var": {
+        "variable": "eventCalculateTotalDeathBenefit",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventCalculateTotalDeathBenefit\n      // - calculate redemption charges base on the withdrawal amount and policy year\n      return \"Calculate total death benefit\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var runningPolicyValues = context.runningPolicyValues;\n\n      var narCalc = DataDrivenCalculatorImpl.create({\n         drivenKeys: PublicConstants.FUND_RETURN,\n         drivenDatas: [runningPolicyValues.deathBenefits, IFund.appliedTo(runningPolicyValues.fundPool).call(\"fundBalances\", {}), IFund.appliedTo(runningPolicyValues.cashoutAccount).call(\"fundBalances\", {})]\n      });\n      var totalDeathBenefits = IDataDrivenCalculator.appliedTo(narCalc).call(\"calculate\", {\n         calculateBlock: function(data) {\n            var db = data[0];\n            var fundBalance = data[1];\n            var cashOutAccountBalance = data[2];\n            var totalFundBalance = Number(fundBalance) + Number(cashOutAccountBalance);\n            if (basePlan.options.dbLevel == SchemaConstants.DB_OPTION.LEVEL) {\n               return Math.max((Number(db).toFixed(2)), Number(totalFundBalance).toFixed(2));\n            } else {\n               return Number(Number(db) + Number(totalFundBalance)).toFixed(2);\n            }\n         }\n      });\n      runningPolicyValues['totalDeathBenefits'] = totalDeathBenefits;\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      return true;\n   }"
+            }
+          }
+        }
+      }
+    },
+    "10": {
+      "var": {
+        "variable": "eventCalcPayout",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      //eventCalcPayout\n      return \"Withdraw dividends / target income fund\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n      var runningPolicyValues = context.runningPolicyValues;\n      var year = context.runningPolicyValues.year;\n      var month = context.runningPolicyValues.months % 12;\n      var payoutStartYear = Number(proposal.coverageInfo.dividendWithdrawnStartYear) - 1;\n      if (payoutStartYear <= year) {\n         runningPolicyValues.cashOut = true;\n         var totalPayout = IFund.appliedTo(runningPolicyValues.fundPool).call(\"payout\", {});\n         for (cashOutKey in totalPayout) {\n            if (Utils.isNothing(runningPolicyValues.cashOutPayments[cashOutKey])) {\n               runningPolicyValues.cashOutPayments[cashOutKey] = Number(0);\n            }\n            if (Utils.isNothing(runningPolicyValues.accumulatedcashOutPayments[cashOutKey])) {\n               runningPolicyValues.accumulatedcashOutPayments[cashOutKey] = Number(0);\n            }\n            runningPolicyValues.cashOutPayments[cashOutKey] = Number(totalPayout[cashOutKey]);\n            runningPolicyValues.accumulatedcashOutPayments[cashOutKey] = runningPolicyValues.accumulatedcashOutPayments[cashOutKey] + Number(totalPayout[cashOutKey]);\n         }\n      } else {\n         runningPolicyValues.cashOut = false;\n      }\n      //console.log(\"eventCalcPayout = \" + JSON.stringify(runningPolicyValues.cashOutPayments));\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var policyOptions = context.policyOptions;\n      return true;\n      //return Utils.matchInList(InterfaceConstants.POLICY_OPTIONS.CASH_OUT_OPTION, policyOptions, false);\n   }"
+            }
+          }
+        }
+      }
+    },
+    "11": {
+      "var": {
+        "variable": "eventDepositPayout",
+        "parentClass": "Class",
+        "createMethod": "define",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "eventName",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      // eventDepositPayout\n      return \"Deposit Payout\";\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "run",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var metadata = context.events.metadata;\n      var proposal = context.proposal;\n      var basePlan = proposal.coverageInfo;\n\n      var runningPolicyValues = context.runningPolicyValues;\n      var year = context.runningPolicyValues.year;\n      var month = context.runningPolicyValues.months % 12;\n      var payoutStartYear = Number(proposal.coverageInfo.dividendWithdrawnStartYear) - 1;\n      if (payoutStartYear <= year) {\n         //IFund.appliedTo(runningPolicyValues.fundPool).call(\"dumpins\", {amounts: runningPolicyValues.cashOutPayments});\n         IFund.appliedTo(runningPolicyValues.cashoutAccount).call(\"dumpins\", {\n            amounts: runningPolicyValues.cashOutPayments\n         });\n      }\n      //console.log(\"dumpins = \" + JSON.stringify(runningPolicyValues.cashOutPayments));\n   }"
+            }
+          },
+          "2": {
+            "attribute": {
+              "attrName": "shouldBeRun",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var context = args[\"context\"];\n      var policyOptions = context.policyOptions;\n      //return true;\n      return !Utils.matchInList(InterfaceConstants.POLICY_OPTIONS.CASH_OUT_OPTION, policyOptions, false);\n   }"
+            }
+          }
+        }
+      }
+    }
+  },
+  "exception": null
+}

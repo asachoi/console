@@ -8,13 +8,55 @@
         <link rel="stylesheet" href="app.css">
     </head>
     <body ng-app="YourApp">
-
         <div 
             ng-controller="YourController" 
             layout="row" 
             class="main" 
             id="sortable-container"
+            ng-init="editmode=false"
             >
+
+
+            <md-sidenav
+                    layout="column"
+                    class="md-sidenav-right"
+                    md-component-id="right"
+                    md-is-locked-open="true"
+                    md-whiteframe="4"
+                    style="overflow: visible;"
+            >
+                <md-toolbar>
+                    <div class="md-toolbar-tools" layout="row">
+                        <h1 flex>
+                            <span>Available Events</span>
+                        </h1>
+                    </div>
+                </md-toolbar>
+
+                <md-content layout-padding style="overflow: visible;">
+
+                    <div
+                            layout="column"
+                            as-sortable="sortableCloneOptions"
+                            ng-model="palette"
+                    >
+                        <div
+                                class="draggable-item"
+                                ng-repeat="obj in palette"
+                                as-sortable-item
+                                ng-click="editEvent(obj)"
+                        >
+                            <div
+                                    class="draggable-handle"
+                                    as-sortable-item-handle
+                            >
+                                {{obj.name}}
+                            </div>
+                        </div>
+                    </div>
+
+                </md-content>
+            </md-sidenav>
 
             <md-content
                 class="content-area" 
@@ -25,7 +67,11 @@
                 <md-toolbar>
                     <div class="md-toolbar-tools">
                         <h1>
-                            <span>Droppable area</span>
+                            <md-input-container>
+                                <md-select ng-model="someModel" placeholder="Select a product">
+                                    <md-option ng-value="n" ng-repeat="n in groups" ng-click="productSelected(n)">{{ n.name }}</md-option>
+                                </md-select>
+                            </md-input-container>
                         </h1>
                     </div>
                 </md-toolbar>
@@ -35,7 +81,29 @@
                     layout="column"
                     as-sortable="sortableOptions" 
                     ng-model="dropped"
+                    ng-show="!editmode"
                     >
+                    <md-input name="groupId"></md-input>
+                    <md-input name="groupId"></md-input>
+
+
+                    <div layout-gt-xs="row">
+                        <md-input-container class="md-block" flex-gt-xs>
+                            <label>groupId</label>
+                            <input ng-model="self['groupId']"  >
+                        </md-input-container>
+
+                        <md-input-container class="md-block" flex-gt-xs>
+                            <label>productId</label>
+                            <input ng-model="self['productId']"  >
+                        </md-input-container>
+
+                        <md-input-container class="md-block" flex-gt-xs>
+                            <label>productType</label>
+                            <input ng-model="self['productType']"  >
+                        </md-input-container>
+                    </div>
+
                     <div 
                         class="draggable-item"
                         ng-repeat="obj in dropped"
@@ -45,60 +113,37 @@
                             class="draggable-handle"
                             as-sortable-item-handle
                             >
-                            {{obj.name}} | {{obj.temp}}
+                            {{obj.name}}
                         </div>
                     </div>
                 </div>
 
+                <div ng-show="editmode">
+                    <h2>{{selectedObj.var.variable}}</h2>
+
+                    <div >
+                        <md-button ng-repeat="n in selectedObj.var.body" ng-click="setCode(n)"
+                                   class="md-raised"
+                                   ng-class="{'md-primary':(n.attribute == code)} "
+                        >
+                            {{n.attribute.attrName}}
+
+
+                        </md-button>
+                    </div>
+
+
+                    <div  ui-ace="{
+                              useWrapMode : true,
+                              showGutter: false,
+                              theme:'twilight',
+                              mode: 'javascript'}"
+                          ng-model="code.attrValue"                  ></div>
+                </div>
+
             </md-content>
 
-            <md-sidenav 
-                layout="column" 
-                class="md-sidenav-right"
-                md-component-id="right"
-                md-is-locked-open="true"
-                md-whiteframe="4"
-                style="overflow: visible;"
-                >
-                <md-toolbar>
-                    <div class="md-toolbar-tools" layout="row">
-                        <h1 flex>
-                            <span>Palette</span>
-                        </h1>
-                    </div>
-                </md-toolbar>
 
-                <md-content layout-padding style="overflow: visible;">
-
-                    <form name="filterForm">
-                        <md-input-container class="md-icon-float">
-                            <label>Filter</label>
-                            <md-icon>search</md-icon>
-                            <input name="paletteFilter" ng-model="paletteFilter">
-                        </md-input-container>
-                    </form>               
-
-                    <div 
-                        layout="column"
-                        as-sortable="sortableCloneOptions" 
-                        ng-model="palette"
-                        >
-                        <div 
-                            class="draggable-item"                        
-                            ng-repeat="obj in palette"
-                            as-sortable-item
-                            >
-                            <div 
-                                class="draggable-handle"
-                                as-sortable-item-handle
-                                >
-                                {{obj.name}}
-                            </div>
-                        </div>
-                    </div>     
-
-                </md-content>                
-            </md-sidenav>
         
         </div>
 
@@ -108,7 +153,14 @@
         <script src="/bower_components/angular-material/angular-material.js"></script>
         <script src="/bower_components/angular-material-icons/angular-material-icons.js"></script>
         <script type="text/javascript" src="/bower_components/ng-sortable/dist/ng-sortable.min.js"></script>
+
+        <script type="text/javascript" src="bower_components/ace-builds/src-min-noconflict/ace.js"></script>
+        <script type="text/javascript" src="bower_components/angular-ui-ace/ui-ace.js"></script>
+
         <script src="app.js"></script>
+
+
+
 
     </body>
 </html>

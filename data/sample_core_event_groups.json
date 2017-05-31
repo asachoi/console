@@ -1,0 +1,30 @@
+{
+  "result": {
+    "0": {
+      "var": {
+        "variable": "UvlEvents",
+        "parentClass": "CommonEvents",
+        "createMethod": "extend",
+        "body": {
+          "0": {
+            "attribute": {
+              "attrName": "init",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      this.self['groupId']=\"UVL\";\n      this.self['productId']=null;\n      this.self['productType']=CatalogConstants.PRODUCT_TYPE.UVLIFE;\n   }"
+            }
+          },
+          "1": {
+            "attribute": {
+              "attrName": "events",
+              "type": "function",
+              "params": "args",
+              "attrValue": "{\n      var events = [\n         eventAvyInitialization.create(),\n         eventReceiveInitialPremiums.create(),\n         eventReceiveTopupPremium.create(),\n         eventDeductWithdrawal.create(),\n         eventCalculateNAR.create(),\n         eventCalculateCOI.create(),\n         eventDeductCOI.create(),\n         eventRollInterest.create(),\n         eventCalcPayout.create(),\n         eventDepositPayout.create(),\n         eventCalculateDeathBenefit.create(),\n         eventCalculateTotalDeathBenefit.create()\n      ];\n      return events;\n   }"
+            }
+          }
+        }
+      }
+    }
+  },
+  "exception": null
+}
