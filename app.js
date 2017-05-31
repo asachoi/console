@@ -4,6 +4,7 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
         $scope.groups = [];
         $scope.dropped = []
         $scope.selectedIndex = 0
+        //$scope.currProduct = null
 
         $http.get('data/sample_core_events.json').then(
             function(resp) {

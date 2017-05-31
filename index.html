@@ -68,7 +68,7 @@
                     <div class="md-toolbar-tools">
                         <h1>
                             <md-input-container>
-                                <md-select ng-model="someModel" placeholder="Select a product">
+                                <md-select ng-model="currProduct" placeholder="Select a product">
                                     <md-option ng-value="n" ng-repeat="n in groups" ng-click="productSelected(n)">{{ n.name }}</md-option>
                                 </md-select>
                             </md-input-container>
@@ -76,12 +76,20 @@
                     </div>
                 </md-toolbar>
 
+                <div ng-show="!editmode && !currProduct">
+                    Click on event to edit the function
+
+                    or
+
+                    Select a product to update event flow
+                </div>
+
                 <div
 					class="drop-area"
                     layout="column"
                     as-sortable="sortableOptions" 
                     ng-model="dropped"
-                    ng-show="!editmode"
+                    ng-show="!editmode && currProduct != null"
                     >
 
 
@@ -101,7 +109,7 @@
                             <input ng-model="self['productType']"  >
                         </md-input-container>
                     </div>
-
+                    <h3>specify workflow below</h3>
                     <div 
                         class="draggable-item"
                         ng-repeat="obj in dropped"
@@ -115,6 +123,8 @@
                             <span ng-click="removeEvent(obj)">[X]</span> {{obj.name}}
                         </div>
                     </div>
+
+                    <md-button class="md-raised">Update</md-button>
                 </div>
 
                 <div ng-show="editmode">
@@ -137,9 +147,9 @@
                               mode: 'javascript'}"
                           ng-model="code.attrValue"                  ></div>
 
-
+                    <md-button class="md-raised">Update</md-button>
                 </div>
-                <md-button class="md-raised">Update</md-button>
+
 
 
             </md-content>
