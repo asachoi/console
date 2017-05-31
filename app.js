@@ -3,6 +3,7 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
     .controller("YourController", function ($scope, $http, $filter) {
         $scope.groups = [];
         $scope.dropped = []
+        $scope.selectedIndex = 0
 
         $http.get('data/sample_core_events.json').then(
             function(resp) {
@@ -57,6 +58,7 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
 
         $scope.editEvent = function(obj) {
             var resultObj = $scope.coreEvents
+            $scope.selectedIndex = 0;
 
             $scope.editmode=true;
             Object.values(resultObj).forEach(
@@ -77,7 +79,17 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
 
 
             $scope.code = obj.attribute
+
+            //if($scope.code.substr
             //obj.attribute
+        }
+
+        $scope.removeEvent = function(obj) {
+
+
+            $scope.dropped = $scope.dropped.filter(function(item) {
+                return item.name != obj.name;
+            });
         }
 
         $scope.productSelected = function(obj) {
@@ -93,6 +105,7 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
            eval(obj.value[0].attribute.attrValue);
 
            $scope.self = this.self;
+           $scope.selectedIndex = 0;
 
            var events = obj.value[1].attribute.attrValue.match(/\event.*?\.create()/g)
 

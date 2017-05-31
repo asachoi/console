@@ -83,8 +83,6 @@
                     ng-model="dropped"
                     ng-show="!editmode"
                     >
-                    <md-input name="groupId"></md-input>
-                    <md-input name="groupId"></md-input>
 
 
                     <div layout-gt-xs="row">
@@ -112,8 +110,9 @@
                         <div 
                             class="draggable-handle"
                             as-sortable-item-handle
+
                             >
-                            {{obj.name}}
+                            <span ng-click="removeEvent(obj)">[X]</span> {{obj.name}}
                         </div>
                     </div>
                 </div>
@@ -121,16 +120,14 @@
                 <div ng-show="editmode">
                     <h2>{{selectedObj.var.variable}}</h2>
 
-                    <div >
-                        <md-button ng-repeat="n in selectedObj.var.body" ng-click="setCode(n)"
-                                   class="md-raised"
-                                   ng-class="{'md-primary':(n.attribute == code)} "
-                        >
-                            {{n.attribute.attrName}}
+                    <md-tabs md-dynamic-height md-border-bottom  ng-init="md-selected=-1" md-center-tabs="true" md-no-ink-bar="true"
+                             md-selected="selectedIndex"
+                    >
+                        <md-tab style="display:none"></md-tab>
+                        <md-tab ng-repeat="n in selectedObj.var.body" ng-click="setCode(n)" label="{{n.attribute.attrName}}">
 
-
-                        </md-button>
-                    </div>
+                        </md-tab>
+                    </md-tabs>
 
 
                     <div  ui-ace="{
@@ -139,7 +136,11 @@
                               theme:'twilight',
                               mode: 'javascript'}"
                           ng-model="code.attrValue"                  ></div>
+
+
                 </div>
+                <md-button class="md-raised">Update</md-button>
+
 
             </md-content>
 
