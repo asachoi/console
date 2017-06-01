@@ -84,70 +84,109 @@
                     Select a product to update event flow
                 </div>
 
-                <div
-					class="drop-area"
-                    layout="column"
-                    as-sortable="sortableOptions" 
-                    ng-model="dropped"
-                    ng-show="!editmode && currProduct != null"
-                    >
+                <div ng-show="!editmode && currProduct != null">
+                    <md-card>
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">Lookup criteria</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-content>
+                            <div layout="row">
+                                <md-input-container class="md-block" flex-gt-xs>
+                                    <label>groupId</label>
+                                    <input ng-model="self['groupId']"  >
+                                </md-input-container>
+
+                                <md-input-container class="md-block" flex-gt-xs>
+                                    <label>productId</label>
+                                    <input ng-model="self['productId']"  >
+                                </md-input-container>
+
+                                <md-input-container class="md-block" flex-gt-xs>
+                                    <label>productType</label>
+                                    <input ng-model="self['productType']"  >
+                                </md-input-container>
+                            </div>
+                        </md-card-content>
+                    </md-card>
+                    <md-card >
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-headline">Calculation steps</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-content>
+                            <div
+                                    class="drop-area"
+                                    layout="column"
+                                    as-sortable="sortableOptions"
+                                    ng-model="dropped"
+                                >
+
+                                <div
+                                        class="draggable-item"
+                                        ng-repeat="obj in dropped"
+                                        as-sortable-item
+
+                                    >
+                                    <div
+                                            class="draggable-handle"
+                                            as-sortable-item-handle
+
+                                    >
+                                        <span ng-click="removeEvent(obj)">[X]</span> {{obj.name}}
+                                    </div>
+                                </div>
+                            </div>
+                        </md-card-content>
+                        <md-card-actions layout="row" layout-align="end center">
+                            <md-button class="md-raised">Update</md-button>
+                            <md-button class="md-raised">Clone</md-button>
+                        </md-card-actions>
+                    </md-card>
 
 
-                    <div layout-gt-xs="row">
-                        <md-input-container class="md-block" flex-gt-xs>
-                            <label>groupId</label>
-                            <input ng-model="self['groupId']"  >
-                        </md-input-container>
+            </div>
 
-                        <md-input-container class="md-block" flex-gt-xs>
-                            <label>productId</label>
-                            <input ng-model="self['productId']"  >
-                        </md-input-container>
 
-                        <md-input-container class="md-block" flex-gt-xs>
-                            <label>productType</label>
-                            <input ng-model="self['productType']"  >
-                        </md-input-container>
-                    </div>
-                    <h3>specify workflow below</h3>
-                    <div 
-                        class="draggable-item"
-                        ng-repeat="obj in dropped"
-                        as-sortable-item
+            <div ng-show="editmode">
+                <md-card>
+
+                    <md-card-title>
+                        <md-card-title-text>
+                            <span class="md-headline"> {{selectedObj.var.variable}} </span>
+                        </md-card-title-text>
+                    </md-card-title>
+                    <md-card-content>
+                        <md-tabs md-dynamic-height md-border-bottom  ng-init="md-selected=-1" md-center-tabs="true" md-no-ink-bar="true"
+                                 md-selected="selectedIndex"
                         >
-                        <div 
-                            class="draggable-handle"
-                            as-sortable-item-handle
+                            <md-tab style="display:none"></md-tab>
+                            <md-tab ng-repeat="n in selectedObj.var.body" ng-click="setCode(n)" label="{{n.attribute.attrName}}">
 
-                            >
-                            <span ng-click="removeEvent(obj)">[X]</span> {{obj.name}}
-                        </div>
-                    </div>
-
-                    <md-button class="md-raised">Update</md-button>
-                </div>
-
-                <div ng-show="editmode">
-                    <h2>{{selectedObj.var.variable}}</h2>
-
-                    <md-tabs md-dynamic-height md-border-bottom  ng-init="md-selected=-1" md-center-tabs="true" md-no-ink-bar="true"
-                             md-selected="selectedIndex"
-                    >
-                        <md-tab style="display:none"></md-tab>
-                        <md-tab ng-repeat="n in selectedObj.var.body" ng-click="setCode(n)" label="{{n.attribute.attrName}}">
-
-                        </md-tab>
-                    </md-tabs>
+                            </md-tab>
+                        </md-tabs>
 
 
-                    <div  ui-ace="{
+                        <div  ui-ace="{
                               useWrapMode : true,
                               showGutter: false,
                               theme:'twilight',
                               mode: 'javascript'}"
-                          ng-model="code.attrValue"                  ></div>
+                              ng-model="code.attrValue"                  ></div>
+                    </md-card-content>
+                    <md-card-actions layout="row" layout-align="end center">
+                        <md-button class="md-raised">Update</md-button>
+                        <md-button class="md-raised">Clone</md-button>
+                    </md-card-actions>
+                </md-card>
 
-                    <md-button class="md-raised">Update</md-button>
+
+
+
+
+
                 </div>
 
 

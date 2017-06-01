@@ -60,6 +60,7 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
         $scope.editEvent = function(obj) {
             var resultObj = $scope.coreEvents
             $scope.selectedIndex = 0;
+            $scope.currProduct = '';
 
             $scope.editmode=true;
             Object.values(resultObj).forEach(
@@ -78,6 +79,9 @@ angular.module( 'YourApp', [ 'ngMaterial', 'ngMdIcons', 'as.sortable', 'ui.ace']
         $scope.setCode = function(obj) {
             console.debug(obj.attribute.attrValue)//.attrValue)
 
+            if(obj.attribute.attrValue.substring(0,1) == '{') {
+                obj.attribute.attrValue = obj.attribute.attrValue.slice(1, obj.attribute.attrValue.length - 2)
+            }
 
             $scope.code = obj.attribute
 
